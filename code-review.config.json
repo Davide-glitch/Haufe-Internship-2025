@@ -1,0 +1,12 @@
+{
+  "patterns": [
+    {
+      "name": "No TODOs",
+      "regex": "TODO",
+      "severity": "info",
+      "message": "Found TODO comment. Consider creating a tracked task instead.",
+      "guideline": "Team policy: Track tasks in issue tracker.",
+      "tags": ["process", "style"]
+    }
+  ]
+}

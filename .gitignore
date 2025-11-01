@@ -1,0 +1,34 @@
+# Node & build artifacts
+node_modules/
+**/node_modules/
+dist/
+build/
+.out/
+.vite/
+.next/
+
+# Local caches and temp
+backend/tmp/
+backend/data/
+web/.vite/
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Env & credentials
+.env
+backend/.env
+
+# Python
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+# OS
+Icon?
+
+# Project locals
+users.db

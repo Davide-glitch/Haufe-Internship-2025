@@ -1,0 +1,138 @@
+{
+  "name": "ai-code-review",
+  "displayName": "AI Code Review Assistant",
+  "description": "AI-powered code review with local LLM (Ollama)",
+  "version": "0.1.0",
+  "publisher": "your-name",
+  "license": "MIT",
+  "icon": "icon.svg",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Linters", "Programming Languages"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "AI Code Review",
+      "properties": {
+        "aiCodeReview.autoRunOnStartup": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically run a review on the active editor at startup and when opening supported files (Python/JS/TS)."
+        },
+        "aiCodeReview.preferLocalLLM": {
+          "type": "boolean",
+          "default": true,
+          "description": "Prefer local Ollama over cloud APIs for privacy and cost savings"
+        },
+        "aiCodeReview.ollama.model": {
+          "type": "string",
+          "default": "qwen2.5-coder:7b",
+          "description": "Ollama model to use for code review"
+        },
+        "aiCodeReview.severityThreshold": {
+          "type": "string",
+          "enum": ["info", "warning", "error", "critical"],
+          "default": "warning",
+          "description": "Minimum severity level to show in reviews"
+        },
+        "aiCodeReview.autoFixEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic fix suggestions"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "aiCodeReview.reviewFile",
+        "title": "AI Code Review: Review Current File",
+        "icon": "$(check)"
+      },
+      {
+        "command": "aiCodeReview.reviewChanges",
+        "title": "AI Code Review: Review Git Changes",
+        "icon": "$(diff)"
+      },
+      {
+        "command": "aiCodeReview.applyFix",
+        "title": "AI Code Review: Apply Suggested Fix"
+      },
+      {
+        "command": "aiCodeReview.installPreCommitHook",
+        "title": "AI Code Review: Install Git pre-commit hook"
+      },
+      {
+        "command": "aiCodeReview.openPrompt",
+        "title": "AI Code Review: Open Quick Prompt",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "aiCodeReview.openWebUI",
+        "title": "AI Code Review: Open Web UI",
+        "icon": "$(globe)"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "aiCodeReview.reviewFile",
+          "group": "1_modification"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "aiCodeReview.reviewFile"
+        },
+        {
+          "command": "aiCodeReview.reviewChanges"
+        },
+        {
+          "command": "aiCodeReview.installPreCommitHook"
+        },
+        {
+          "command": "aiCodeReview.openPrompt"
+        },
+        {
+          "command": "aiCodeReview.openWebUI"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "aiCodeReview.reviewFile",
+        "key": "ctrl+shift+r",
+        "mac": "cmd+shift+r"
+      },
+      {
+        "command": "aiCodeReview.openPrompt",
+        "key": "ctrl+alt+a",
+        "mac": "cmd+alt+a"
+      },
+      {
+        "command": "aiCodeReview.openWebUI",
+        "key": "ctrl+shift+o",
+        "mac": "cmd+shift+o"
+      }
+    ]
+  },
+  "bin": {
+    "ai-review": "./out/cli/review-cli.js"
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.2.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
