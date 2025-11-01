@@ -1,3 +1,51 @@
+# Haufe Internship 2025 – AI Code Review (Local)
+
+Simple, local, and private code‑review tool powered by Ollama. One‑click start on Windows, clean web UI.
+
+## Requirements coverage
+
+- ✅ One‑click start on Windows (`start_all.bat`)
+- ✅ Fully local LLM via Ollama (no cloud by default)
+- ✅ Review any GitHub repo (full or incremental “Changed only” with Files Changed summary)
+- ✅ Language detection per file
+- ✅ Code‑focused review with:
+  - exact line numbers and corrected code snippets
+  - severity (CRITICAL/HIGH/MEDIUM/LOW), effort (S/M/L), and docs notes
+- ✅ Guidelines support (paste/upload) + auto‑detect common config files
+- ✅ Metrics (duration, batches, input/output chars, estimated tokens)
+- ✅ Basic comments per repo (file/lines); quick “Comment” from findings
+- ✅ JSON cache for repo state (speeds incremental reviews)
+- ✅ Validation scripts (`quick_test.py`, `test_enhancements.py`)
+- ✅ Optional VS Code extension (Quick Prompt, review commands)
+
+Missing / partial
+
+- ❌ Exact token usage (Ollama doesn’t return token counts; estimates only)
+- ❌ Threaded comments anchored to findings (backend supports findingId; UI prefill only)
+- ❌ Merge multiple uploaded guideline files automatically
+- ❌ Authentication/roles (local single‑user only)
+- ❌ Dockerization
+- ❌ Mobile‑optimized UI
+- ❌ Cloud fallback enabled by default (you can opt‑in via env vars)
+
+## How to run (Windows)
+
+1) Install Ollama
+- https://ollama.com  → install
+- In a terminal: `ollama pull qwen2.5-coder:7b`
+
+2) Start everything
+- Double‑click `start_all.bat` (opens Ollama, Backend http://localhost:7070, Web http://localhost:5173)
+
+3) Use it
+- Left panel: paste code, upload/paste Guidelines, review; after repo review use “Findings (last review)” to prefill comments
+- Right panel: enter repo (owner/repo or full URL), toggle Changed only, choose model, click “Review Repo”; see metrics and add comments
+
+## Quick tests
+
+- `quick_test.py` – health + code review endpoint
+- `test_enhancements.py` – language detection, strict prompts, change tracking
+
 # Haufe Internship 2025 – AI Code Review (Local, Private)# 🤖 AI Code Review Assistant
 
 Turn any GitHub repo into a high‑signal code review using a fully local LLM (Ollama). One‑click start on Windows, with a modern web UI and optional VS Code commands.**Intelligent code review powered by local and cloud LLMs** - Built for privacy, speed, and accuracy.
