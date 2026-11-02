@@ -34,7 +34,14 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReviewManager = void 0;
-const vscode = __importStar(require("vscode"));
+const fs = __importStar(require("fs"));
+let vscode;
+try {
+    vscode = require('vscode');
+}
+catch {
+    vscode = null;
+}
 const cp = __importStar(require("child_process"));
 const path = __importStar(require("path"));
 const LLMRouter_1 = require("../llm/LLMRouter");
@@ -47,7 +54,10 @@ class ReviewManager {
         this.llmRouter.discoverProviders().catch(console.error);
     }
     getWorkspaceRoot() {
-        return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        if (vscode?.workspace?.workspaceFolders?.[0]?.uri?.fsPath) {
+            return vscode.workspace.workspaceFolders[0].uri.fsPath;
+        }
+        return process.cwd();
     }
     async getGitDiff() {
         const cwd = this.getWorkspaceRoot();
@@ -136,11 +146,24 @@ class ReviewManager {
     }
     async applyCustomRules(code, filePath) {
         try {
-            const cfgFiles = await vscode.workspace.findFiles('code-review.config.json', '**/node_modules/**', 1);
-            if (!cfgFiles.length)
+            let content = '';
+            if (vscode?.workspace?.findFiles) {
+                const cfgFiles = await vscode.workspace.findFiles('code-review.config.json', '**/node_modules/**', 1);
+                if (cfgFiles && cfgFiles.length) {
+                    const buf = await vscode.workspace.fs.readFile(cfgFiles[0]);
+                    content = Buffer.from(buf).toString('utf8');
+                }
+            }
+            if (!content) {
+                const root = this.getWorkspaceRoot();
+                const pth = root ? path.join(root, 'code-review.config.json') : 'code-review.config.json';
+                if (fs.existsSync(pth)) {
+                    content = fs.readFileSync(pth, 'utf8');
+                }
+            }
+            if (!content)
                 return [];
-            const buf = await vscode.workspace.fs.readFile(cfgFiles[0]);
-            const cfg = JSON.parse(Buffer.from(buf).toString('utf8'));
+            const cfg = JSON.parse(content);
             const issues = [];
             if (cfg.patterns) {
                 for (const p of cfg.patterns) {

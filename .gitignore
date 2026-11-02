@@ -8,6 +8,7 @@ build/
 .next/
 
 # Local caches and temp
+tmp/
 backend/tmp/
 backend/data/
 web/.vite/

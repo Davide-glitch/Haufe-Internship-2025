@@ -1,306 +1,283 @@
-# Haufe Internship 2025 – AI Code Review (Local)
+# AI Code Review Assistant
 
-Simple, local, and private code‑review tool powered by Ollama. One‑click start on Windows, clean web UI.
+[![Node.js Version](https://img.shields.io/badge/Node.js-18%2B-brightgreen.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18.x-61dafb.svg)](https://react.dev/)
+[![Ollama](https://img.shields.io/badge/Ollama-Local%20LLM-black.svg)](https://ollama.com/)
 
-## Requirements coverage
-
-- ✅ One‑click start on Windows (`start_all.bat`)
-- ✅ Fully local LLM via Ollama (no cloud by default)
-- ✅ Review any GitHub repo (full or incremental “Changed only” with Files Changed summary)
-- ✅ Language detection per file
-- ✅ Code‑focused review with:
-  - exact line numbers and corrected code snippets
-  - severity (CRITICAL/HIGH/MEDIUM/LOW), effort (S/M/L), and docs notes
-- ✅ Guidelines support (paste/upload) + auto‑detect common config files
-- ✅ Metrics (duration, batches, input/output chars, estimated tokens)
-- ✅ Basic comments per repo (file/lines); quick “Comment” from findings
-- ✅ JSON cache for repo state (speeds incremental reviews)
-- ✅ Validation scripts (`quick_test.py`, `test_enhancements.py`)
-- ✅ Optional VS Code extension (Quick Prompt, review commands)
-
-Missing / partial
-
-- ❌ Exact token usage (Ollama doesn’t return token counts; estimates only)
-- ❌ Threaded comments anchored to findings (backend supports findingId; UI prefill only)
-- ❌ Merge multiple uploaded guideline files automatically
-- ❌ Authentication/roles (local single‑user only)
-- ❌ Dockerization
-- ❌ Mobile‑optimized UI
-- ❌ Cloud fallback enabled by default (you can opt‑in via env vars)
-
-## How to run (Windows)
-
-1) Install Ollama
-- https://ollama.com  → install
-- In a terminal: `ollama pull qwen2.5-coder:7b`
-
-2) Start everything
-- Double‑click `start_all.bat` (opens Ollama, Backend http://localhost:7070, Web http://localhost:5173)
-
-3) Use it
-- Left panel: paste code, upload/paste Guidelines, review; after repo review use “Findings (last review)” to prefill comments
-- Right panel: enter repo (owner/repo or full URL), toggle Changed only, choose model, click “Review Repo”; see metrics and add comments
-
-## Quick tests
-
-- `quick_test.py` – health + code review endpoint
-- `test_enhancements.py` – language detection, strict prompts, change tracking
-
-# Haufe Internship 2025 – AI Code Review (Local, Private)# 🤖 AI Code Review Assistant
-
-Turn any GitHub repo into a high‑signal code review using a fully local LLM (Ollama). One‑click start on Windows, with a modern web UI and optional VS Code commands.**Intelligent code review powered by local and cloud LLMs** - Built for privacy, speed, and accuracy.
-
-- Local and private: runs entirely on your machine via Ollama## ✨ Features
-
-- Zero cost: no cloud calls by default (OpenAI fallback optional)
-
-- Repo review: full or incremental (changed files only), with language detection- 🏠 **Local-first LLM** - Runs on Ollama (100% private, zero cost)
-
-- Code‑focused prompts: mandatory line numbers, exact corrected snippets, severity, effort, docs- ☁️ **Cloud fallback** - DeepSeek, OpenAI, Gemini APIs
-
-- Guidelines: paste or upload rules (PEP8/ESLint/MD) and auto‑detect common config files- 🎯 **Multi-dimensional analysis** - Heuristics + language-specific + AI
-
-- Metrics: duration, batches, character and estimated token counts- 🔄 **Incremental review** - Analyze only changed code (Git diff)
-
-- Comments: simple per‑repo thread with file/line context- 🛠️ **Auto-fix** - One-click code corrections
-
-- 🚫 **Pre-commit hooks** - Block bad commits automatically
-
-- 💰 **Cost tracking** - Monitor API usage and spending
-
-## Quick start (Windows)- 🎨 **Beautiful UI** - Modern webview with metrics dashboard
-
-1. Install Ollama (if you don’t have it yet)## 🚀 Quick Start
-
-- Download from https://ollama.com and install
-
-- Open a terminal and run once: `ollama pull qwen2.5-coder:7b`### 1. Install Ollama (Recommended)
-
-2. Start everything (Ollama + Backend + Web)```bash
-
-- Double‑click `start_all.bat` from the repo root# Download from https://ollama.ai
-
-- This opens three windows: Ollama service, Backend API (port 7070), Web UI (port 5173)# Pull a code model:
-
-- A browser tab should open automatically at http://localhost:5173ollama pull deepseek-coder:6.7b
-
-````
-
-3) Use it
-
-- Left panel:### 2. Build & Run
-
-  - Paste code and click "Review" for single‑file checks
-
-  - Upload or paste Project Guidelines```bash
-
-  - After running a repo review (right panel), "Findings (last review)" appears with a Comment button to prefill the comment formnpm install
-
-- Right panel:npm run compile
-
-  - Enter repo (owner/repo or full Git URL), toggle Changed only, choose model, and click "Review Repo"# Press F5 in VS Code to launch
-
-  - See metrics under the repo controls```
-
-  - Add comments (file/lines can be prefilled from the left findings list)
-
-### 3. Review Code
-
-
-
-## What’s included- Press `Ctrl+Shift+R` (Cmd+Shift+R on Mac)
-
-- Or right-click → "AI Code Review: Review Current File"
-
-- backend/ – Node/Express TypeScript API for local LLM via Ollama
-
-  - `/health`, `/models`, `/api/review`, `/api/reviewRepo`## 🎯 Commands
-
-  - Comments API: `GET /api/comments?repo=...`, `POST /api/comments`
-
-  - Caching DB (JSON) in `backend/data` (repoIndex.json, comments.json)| Command                     | Shortcut       | Description                        |
-
-- web/ – React + Vite web UI (dark, modern)| --------------------------- | -------------- | ---------------------------------- |
-
-  - Left: code input, guidelines (upload + textarea), findings navigator| **Review Current File**     | `Ctrl+Shift+R` | Analyze open file                  |
-
-  - Right: AI output, repo review controls, metrics, comments thread| **Review Git Changes**      | -              | Analyze staged changes only        |
-
-- scripts/ – Resilient runners for backend/web| **Install Pre-commit Hook** | -              | Block commits with critical issues |
-
-- start_all.bat – One‑click launcher (Ollama + Backend + Web)
-
-- quick_test.py – Sanity check for health and endpoints## 🔧 Configuration
-
-- test_enhancements.py – Validates language detection, prompt strictness, and incremental change display
-
-### Environment Variables
-
-
-
-## Repo review featuresThe extension supports multiple LLM providers:
-
-
-
-- Language annotations per file (e.g., File: path (Language: TypeScript))```bash
-
-- Incremental mode (changedOnly): only new/modified files; change summary included# Optional: Cloud API keys for fallback
-
-- Batching within size limits (configurable)DEEPSEEK_API_KEY="sk-..."
-
-- Strict review output with:OPENAI_API_KEY="sk-..."
-
-  - Severity (CRITICAL/HIGH/MEDIUM/LOW)GEMINI_API_KEY="..."
-
-  - File:Line```
-
-  - Current Code + Fixed Code (exact snippets)
-
-  - Explanation + Effort + Docs### Custom Rules
-
-
-
-Create `code-review.config.json` in workspace root:
-
-## Models
-
-```json
-
-- Default: `qwen2.5-coder:7b` (recommended for speed/quality balance){
-
-- Use the web UI model dropdown; ensure the model is pulled in Ollama  "patterns": [
-
-- You can add more models (e.g., `llama3.1:8b`, `deepseek-coder-v2:16b`)    {
-
-      "name": "No console.log",
-
-      "regex": "console\\.log",
-
-## Developer notes      "severity": "warning",
-
-      "message": "Remove debug logging",
-
-- Ports: Backend 7070, Web 5173 (Vite may pick a nearby port if 5173 used)      "guideline": "Team policy",
-
-- Windows‑first: Batch scripts included. macOS/Linux can run backend and web via npm scripts.      "tags": ["style"]
-
-- Optional OpenAI fallback: set `ALLOW_CLOUD=true` and `OPENAI_API_KEY` in backend env to enable.    }
-
-  ]
-
-}
-
-## Folder structure```
-
-
-
-```## 📊 Supported Languages
-
-.
-
-├─ backend/                # Express API (TypeScript)- **Python** - Security, PEP8, SQL injection, eval
-
-│  ├─ src/server.ts- **JavaScript** - ESLint rules, console.log, var
-
-│  ├─ data/                # JSON cache (repoIndex.json, comments.json)- **TypeScript** - Type safety, any usage
-
-│  └─ package.json- **More coming soon!**
-
-├─ web/                    # React + Vite UI
-
-│  ├─ src/App.tsx## 🎨 Demo
-
-│  └─ package.json
-
-├─ scripts/                # Resilient runner scriptsTry the demo files:
-
-├─ start_all.bat           # One‑click start (Windows)
-
-├─ quick_test.py           # Quick health + endpoint test```bash
-
-├─ test_enhancements.py    # Validation for features# Open demo/buggy_python.py
-
-└─ README.md# Issues detected: hardcoded passwords, SQL injection, eval, etc.
-
-````
-
-# Open demo/buggy_javascript.js
-
-# Issues detected: var usage, console.log, eval, ==
-
-## Useful scripts```
-
-- quick_test.py – verifies backend health and code review## 🏗️ Architecture
-
-- test_enhancements.py – runs 3 tests (code prompts, language detection, change tracking)
-
-- extras/QUICK_REFERENCE.md – tips and hints```
-
-Extension → ReviewManager → LLM Router
-
-                              ├─ Ollama (local)
-
-## Mermaid overview ├─ DeepSeek API
-
-                              ├─ OpenAI GPT-4
-
-````mermaid └─ Google Gemini
-
-flowchart LR
-
-  A[Ollama (local models)] <-- REST --> B[Backend API (Express TS)]Analysis Pipeline:
-
-  B <-- fetch --> C[Web UI (React + Vite)]1. Language-specific patterns
-
-  B <- read/write -> D[(JSON Cache)]2. Security heuristics
-
-  B <-- git clone --> E[GitHub Repo]3. Custom rules
-
-```4. AI semantic analysis
-
-````
-
-## Troubleshooting## 📈 Performance
-
-- Port 7070 in use: close prior backend windows or run `Stop-Process -Name node,tsx` in PowerShell, then re‑run start_all.bat| Metric | Value |
-
-- No models found: open an Ollama terminal and run `ollama pull qwen2.5-coder:7b`| -------------------- | ----------- |
-
-- Health shows offline: ensure Ollama service window is running (`ollama serve`)| Heuristic analysis | < 100ms |
-
-| LLM analysis (local) | 2-5s |
-
-| LLM analysis (cloud) | 1-3s |
-
-## License| Cost per review | $0.00-$0.01 |
-
-This project is for the Haufe Internship 2025 showcase. If you intend to use it beyond evaluation, please add a suitable open‑source license and review third‑party model terms.## 🛠️ Development
-
-```bash
-# Install dependencies
-npm install
-
-# Compile TypeScript
-npm run compile
-
-# Watch mode
-npm run watch
-```
-
-## 📝 License
-
-MIT License
-
-## 🎓 Credits
-
-Built with:
-
-- [VS Code Extension API](https://code.visualstudio.com/api)
-- [Ollama](https://ollama.ai/)
-- [DeepSeek Coder](https://github.com/deepseek-ai/DeepSeek-Coder)
+An intelligent, local-first code review platform designed for privacy, speed, and accuracy. Analyze single files, staged git diffs, or entire GitHub repositories using local LLMs (via Ollama) or optional cloud providers (DeepSeek, OpenAI, Google Gemini). Includes a modern web interface, a standalone CLI tool, and an optional VS Code extension.
 
 ---
 
-📖 **See [HACKATHON.md](./HACKATHON.md) for complete documentation and scoring breakdown**
+## ✨ Features
 
-**Made with ❤️ for better code reviews**
+- 🏠 **Local-First & Private**: Runs completely on your machine via Ollama (`qwen2.5-coder:7b`, `deepseek-coder`, `llama3`). Zero telemetry, zero cloud costs.
+- ☁️ **Flexible Cloud Fallback**: Optional integration with OpenAI (`gpt-4o-mini`), DeepSeek, or Google Gemini when local compute is unavailable.
+- 🌐 **Modern Web Console**: Interactive two-panel web UI featuring code editing, live metrics, multi-file guideline merging, and comment threads.
+- 🔄 **Incremental & Full Repo Reviews**: Clone and review public GitHub repositories. Cache files by SHA-256 hash in `backend/data/repoIndex.json` to review only modified/new files (`changedOnly`).
+- 🎯 **Line-by-Line Code Analysis**: Mandatory exact line citations, before/after corrected code snippets, severity tags (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`), effort estimates (`S`, `M`, `L`), and doc recommendations.
+- 📋 **Project Guidelines Awareness**: Paste custom guidelines or upload multiple rules files (`.eslintrc`, `pyproject.toml`, `.editorconfig`, Markdown, JSON) with automatic merging.
+- 💬 **Discussion & Comments Thread**: Anchor review notes and comments to specific files and line numbers.
+- 🔌 **VS Code Extension & Standalone CLI**:
+  - Run reviews directly inside VS Code with `Ctrl+Shift+R`.
+  - Block problematic commits before they hit your repo via `ai-review --staged` pre-commit hooks.
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+    subgraph UI["Developer Interfaces"]
+        W["Web UI (React + Vite)<br/>http://localhost:5173"]
+        V["VS Code Extension / CLI<br/>(ai-review)"]
+    end
+
+    subgraph Core["Analysis & Orchestration"]
+        B["Express API Server<br/>http://localhost:7070"]
+        RM["ReviewManager & Analyzers<br/>(Heuristics + AST Patterns)"]
+        Cache[("Local Cache<br/>repoIndex.json & comments.json")]
+    end
+
+    subgraph LLM["Inference Providers"]
+        O["Ollama (Local)<br/>qwen2.5-coder / deepseek-coder"]
+        C["Cloud APIs (Optional Fallback)<br/>DeepSeek / OpenAI / Gemini"]
+    end
+
+    W -->|REST API| B
+    V -->|Direct Engine| RM
+    V -->|Web UI Bridge| W
+    B <-->|Read / Write| Cache
+    B -->|Inference| O
+    B -.->|Fallback| C
+    RM -->|Inference| O
+    RM -.->|Fallback| C
+```
+
+---
+
+## 🚀 Quick Start (Windows)
+
+### 1. Prerequisites
+- **Node.js** 18+ and **npm** 9+ ([Download Node.js](https://nodejs.org/))
+- **Git** ([Download Git](https://git-scm.com/))
+- **Ollama** ([Download Ollama](https://ollama.com/))
+
+Pull the recommended code review model:
+```bash
+ollama pull qwen2.5-coder:7b
+```
+
+### 2. One-Click Start
+Double-click **`start_all.bat`** from the root of the repository. This will:
+1. Verify that the Ollama service is active (or launch it).
+2. Check for the `qwen2.5-coder:7b` model.
+3. Install backend and web dependencies automatically if missing.
+4. Launch the Backend API on `http://localhost:7070`.
+5. Launch the Web UI on `http://localhost:5173`.
+6. Open your default web browser to the application dashboard.
+
+To stop all services and free the ports, double-click **`stop_all.bat`**.
+
+---
+
+## 💻 Manual Setup & Cross-Platform (macOS / Linux)
+
+### 1. Install Dependencies
+```bash
+# Install root extension dependencies
+npm install
+
+# Install backend dependencies
+cd backend && npm install && cd ..
+
+# Install web UI dependencies
+cd web && npm install && cd ..
+```
+
+### 2. Start Backend & Web UI
+Open two separate terminal tabs:
+
+**Terminal 1 (Backend API):**
+```bash
+cd backend
+npm run dev
+# Running on http://localhost:7070
+```
+
+**Terminal 2 (Web UI):**
+```bash
+cd web
+npm run dev
+# Running on http://localhost:5173
+```
+
+---
+
+## 🖥️ Using the Standalone CLI & Pre-commit Hook
+
+### Run Code Review via CLI
+You can review staged Git changes directly from your terminal:
+```bash
+# Compile the TypeScript extension/CLI once:
+npm run compile
+
+# Review staged files:
+node out/cli/review-cli.js --staged
+```
+
+### Git Pre-Commit Hook
+Prevent critical code issues from ever being committed:
+```bash
+# In Linux/macOS or Git Bash:
+cat << 'EOF' > .git/hooks/pre-commit
+#!/bin/sh
+node "./out/cli/review-cli.js" --staged || {
+  echo "AI review detected critical issues. Commit aborted."
+  exit 1
+}
+EOF
+chmod +x .git/hooks/pre-commit
+```
+*(Or install the hook with one click from inside VS Code via the Command Palette: `AI Code Review: Install Git pre-commit hook`)*.
+
+---
+
+## 📖 Web UI Walkthrough
+
+1. **Single File Review (Left Panel)**:
+   - Paste code into the editor.
+   - Choose a language from the **Lang** dropdown (Auto-detect, Python, JavaScript, TypeScript, Java, Go, Rust, C++, C#, or General Q&A).
+   - Adjust the **Temperature** slider (0.0 for strict deterministic linting, 0.5+ for creative solutions).
+   - Click **Review Code**.
+2. **Project Guidelines & Rules**:
+   - Upload multiple rule files (`.md`, `.eslintrc`, `pyproject.toml`, `.json`) using the **Upload Guidelines** button. Files are automatically merged.
+   - Or paste custom guidelines directly into the guidelines textarea.
+3. **Review Any GitHub Repository (Right Panel)**:
+   - Enter any repository identifier (`owner/repo` or full URL `https://github.com/owner/repo`).
+   - Toggle **Changed only** for incremental reviews (skips unchanged files via SHA-256 hashing).
+   - Click **Review Repo**.
+4. **Findings & Discussion Thread**:
+   - Review issues appear in the left panel's findings navigator with color-coded severity badges.
+   - Click **Comment** next to any finding to pre-populate file and line coordinates in the repository comments thread.
+
+---
+
+## ⚙️ Configuration & Custom Rules
+
+### Environment Variables
+Configure backend behavior via environment variables or a `.env` file in `backend/`:
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `PORT` | `7070` | Port for the backend API |
+| `OLLAMA_URL` | `http://localhost:11434` | URL of the local Ollama daemon |
+| `OLLAMA_MODEL` | `qwen2.5-coder:7b` | Default Ollama model to invoke |
+| `ALLOW_CLOUD` | `false` | Enable fallback to OpenAI when Ollama is offline |
+| `OPENAI_API_KEY`| *(empty)* | OpenAI API key for cloud fallback (`gpt-4o-mini`) |
+| `DEEPSEEK_API_KEY`| *(empty)* | Optional DeepSeek API key for VS Code extension |
+| `GEMINI_API_KEY` | *(empty)* | Optional Google Gemini API key for VS Code extension |
+
+### Custom Patterns (`code-review.config.json`)
+Define custom static analysis rules in the workspace root:
+
+```json
+{
+  "patterns": [
+    {
+      "name": "No console.log",
+      "regex": "console\\.log",
+      "severity": "warning",
+      "message": "Remove debug logging statements before committing.",
+      "guideline": "Team Production Policy",
+      "tags": ["style", "clean-code"]
+    },
+    {
+      "name": "No Hardcoded Secrets",
+      "regex": "(password|secret|api_key)\\s*=\\s*['\"][^'\"]+['\"]",
+      "severity": "critical",
+      "message": "Potential credential exposure. Use environment variables.",
+      "guideline": "OWASP A02: Cryptographic Failures",
+      "tags": ["security"]
+    }
+  ]
+}
+```
+
+---
+
+## 🧪 Testing & Verification
+
+Run the included verification scripts to validate backend health, language detection, and incremental change tracking:
+
+```bash
+# 1. Quick sanity test (checks backend health and single review)
+python quick_test.py
+
+# 2. Comprehensive enhancements test (language detection, prompt strictness, incremental tracking)
+python test_enhancements.py
+```
+
+### Try Demo Vulnerability Files
+Inspect the bundled demo targets in `demo/`:
+- `demo/buggy_python.py`: SQL injection, hardcoded passwords, unsafe `eval()`, bare `except:`.
+- `demo/buggy_javascript.js`: `var` usage, loose equality (`==`), active `console.log`.
+- `demo/buggy_typescript.ts`: `any` types, loose type safety, unsafe assertions.
+
+---
+
+## 📁 Repository Structure
+
+```
+Haufe-Internship-2025/
+├── backend/                   # Node.js + Express TypeScript API
+│   ├── src/
+│   │   └── server.ts          # REST endpoints, Ollama/OpenAI routing, git cloning
+│   ├── data/                  # Persistent cache (repoIndex.json, comments.json)
+│   ├── package.json
+│   └── tsconfig.json
+├── web/                       # React + Vite Web Application
+│   ├── src/
+│   │   ├── App.tsx            # Interactive review dashboard & comment threads
+│   │   ├── main.tsx           # Entry point
+│   │   └── styles.css         # Modern dark-theme styling
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.ts
+├── src/                       # VS Code Extension & CLI Engine
+│   ├── analyzers/             # Language-specific heuristics (Python, JS, TS)
+│   ├── cli/                   # Standalone review-cli.js (ai-review --staged)
+│   ├── llm/                   # Multi-provider LLM router (Ollama, DeepSeek, OpenAI, Gemini)
+│   ├── panels/                # VS Code Webview review panel
+│   ├── services/              # ReviewManager core orchestration & Git diff parser
+│   └── extension.ts           # VS Code extension entry point
+├── demo/                      # Sample buggy files for testing
+│   ├── buggy_python.py
+│   ├── buggy_javascript.js
+│   └── buggy_typescript.ts
+├── scripts/                   # Resilient process runners (run_backend.bat, run_web.bat)
+├── start_all.bat              # One-click Windows launcher (Ollama + Backend + Web)
+├── stop_all.bat               # Clean process terminator for Windows
+├── quick_test.py              # Backend health and review verification script
+├── test_enhancements.py       # Multi-feature automated test suite
+├── code-review.config.json    # Workspace custom linting rules
+├── HACKATHON.md               # Technical specification and architecture overview
+└── README.md                  # Project documentation
+```
+
+---
+
+## ❓ Troubleshooting
+
+| Issue | Resolution |
+| :--- | :--- |
+| **Port 7070 or 5173 in use** | Run `stop_all.bat` or kill existing node processes: `Stop-Process -Name node -Force` in PowerShell. |
+| **Ollama shows offline** | Ensure the Ollama background daemon is running by opening a terminal and typing `ollama serve`. |
+| **Model not found error** | Download the model via `ollama pull qwen2.5-coder:7b`. You can also select another model from the dropdown. |
+| **Git clone error on repo review** | Ensure `git` is installed and available in your system `PATH`. Private repositories require configured SSH keys or git credential helper. |
+
+---
+
+## 📄 Documentation
+
+- **Technical Specification**: See [HACKATHON.md](./HACKATHON.md) for architecture deep-dives and pipeline specifications.

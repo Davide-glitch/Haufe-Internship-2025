@@ -82,7 +82,7 @@ echo   ALL STARTED.
 echo   - Ollama service
 echo   - Backend: http://localhost:7070
 echo   - Web UI:  http://localhost:5173 (or next free port)
-echo   - VS Code Dev Host (auto-review enabled)
+echo   - Optional: VS Code Extension compiled in ./out (launch via F5 or use CLI "ai-review")
 
 echo   Close the separate windows to stop each service.
 echo ===========================================

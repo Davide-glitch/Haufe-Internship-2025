@@ -1,4 +1,10 @@
-import * as vscode from 'vscode';
+import type * as vscodeTypes from 'vscode';
+let vscode: any;
+try {
+  vscode = require('vscode');
+} catch {
+  vscode = null;
+}
 import { LLMProvider, LLMUsage, ProviderType } from './types';
 import { OllamaProvider } from './OllamaProvider';
 import { OpenAIProvider } from './OpenAIProvider';
@@ -31,8 +37,8 @@ export class LLMRouter {
   }
 
   private getModelConfig(provider: ProviderType): string {
-    const config = vscode.workspace.getConfiguration('aiCodeReview');
-    return config.get(`${provider}.model`) || this.getDefaultModel(provider);
+    const config = vscode?.workspace?.getConfiguration ? vscode.workspace.getConfiguration('aiCodeReview') : null;
+    return config?.get(`${provider}.model`) || this.getDefaultModel(provider);
   }
 
   private getDefaultModel(provider: ProviderType): string {
@@ -49,8 +55,8 @@ export class LLMRouter {
    * Check which providers are available
    */
   async discoverProviders(): Promise<ProviderType[]> {
-    const config = vscode.workspace.getConfiguration('aiCodeReview');
-    const preferLocal = config.get('preferLocalLLM', true);
+    const config = vscode?.workspace?.getConfiguration ? vscode.workspace.getConfiguration('aiCodeReview') : null;
+    const preferLocal = config ? config.get('preferLocalLLM', true) : true;
 
     // Priority order: local first (if preferred), then cloud
     const priorities: ProviderType[] = preferLocal

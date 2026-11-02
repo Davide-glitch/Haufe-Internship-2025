@@ -13,16 +13,80 @@ const ALLOW_CLOUD = (process.env.ALLOW_CLOUD || 'false').toLowerCase() === 'true
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '2mb' }));
+app.use(express.json({ limit: '10mb' }));
+
+// Helper: unified LLM caller (local Ollama with optional OpenAI fallback)
+async function generateLLMResponse(
+  prompt: string,
+  system: string,
+  selectedModel: string,
+  temperature: number
+): Promise<{ text: string; provider: string; model: string; durationMs: number }> {
+  const t0 = Date.now();
+  try {
+    const r = await axios.post(`${OLLAMA_URL}/api/generate`, {
+      model: selectedModel,
+      stream: false,
+      prompt,
+      system,
+      options: { temperature }
+    }, { timeout: 180_000 });
+    return {
+      text: r.data?.response || '',
+      provider: 'ollama',
+      model: selectedModel,
+      durationMs: Date.now() - t0
+    };
+  } catch (err: any) {
+    if (ALLOW_CLOUD && process.env.OPENAI_API_KEY) {
+      try {
+        const openai = await axios.post(
+          'https://api.openai.com/v1/chat/completions',
+          {
+            model: 'gpt-4o-mini',
+            messages: [
+              ...(system ? [{ role: 'system', content: system }] : []),
+              { role: 'user', content: prompt }
+            ],
+            temperature
+          },
+          { headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` }, timeout: 120_000 }
+        );
+        return {
+          text: openai.data?.choices?.[0]?.message?.content ?? '',
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+          durationMs: Date.now() - t0
+        };
+      } catch (cloudErr: any) {
+        throw new Error(`Ollama failed (${err.message}) and cloud fallback failed (${cloudErr.message})`);
+      }
+    }
+    throw new Error(`Ollama request failed: ${err.message}${!ALLOW_CLOUD ? ' (cloud fallback is disabled)' : ''}`);
+  }
+}
 
 app.get('/health', async (_, res) => {
   try {
-    // Ping Ollama
     const r = await axios.get(`${OLLAMA_URL}/api/tags`, { timeout: 3000 });
     const models = (r.data?.models ?? []).map((m: any) => m?.name).filter(Boolean);
-    return res.json({ ok: true, model: OLLAMA_MODEL, models });
+    return res.json({
+      ok: true,
+      provider: 'ollama',
+      model: OLLAMA_MODEL,
+      models,
+      cloudFallback: ALLOW_CLOUD && !!process.env.OPENAI_API_KEY
+    });
   } catch {
-    return res.json({ ok: false, model: OLLAMA_MODEL, models: [] });
+    const hasCloud = ALLOW_CLOUD && !!process.env.OPENAI_API_KEY;
+    return res.json({
+      ok: hasCloud,
+      provider: hasCloud ? 'openai' : 'none',
+      model: hasCloud ? 'gpt-4o-mini' : OLLAMA_MODEL,
+      models: hasCloud ? ['gpt-4o-mini'] : [],
+      cloudFallback: hasCloud,
+      ollamaOffline: true
+    });
   }
 });
 
@@ -33,6 +97,9 @@ app.get('/models', async (_req, res) => {
     const models = (r.data?.models ?? []).map((m: any) => m?.name).filter(Boolean);
     res.json({ models, default: OLLAMA_MODEL });
   } catch (e: any) {
+    if (ALLOW_CLOUD && process.env.OPENAI_API_KEY) {
+      return res.json({ models: ['gpt-4o-mini'], default: 'gpt-4o-mini', fallback: true });
+    }
     res.status(502).json({ error: 'Failed to query Ollama models', detail: e?.message });
   }
 });
@@ -45,7 +112,7 @@ const readComments = (): Record<string, CommentItem[]> => {
 };
 const writeComments = (obj: Record<string, CommentItem[]>) => {
   const dir = path.dirname(COMMENTS_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(COMMENTS_PATH, JSON.stringify(obj, null, 2), 'utf8');
 };
 
@@ -75,7 +142,6 @@ app.post('/api/review', async (req, res) => {
   const selectedModel = (typeof model === 'string' && model.trim()) ? model.trim() : OLLAMA_MODEL;
   const temp = (typeof temperature === 'number' && temperature >= 0 && temperature <= 1) ? temperature : 0.1;
 
-  // Two modes: 'plain' becomes a helpful chat; others are strict code review
   const isPlain = String(language).toLowerCase() === 'plain';
 
   const system = isPlain
@@ -110,8 +176,8 @@ Avoid fabricating facts. Prefer concise, correct guidance.`
   * Fixed Code: \`\`\`language\nideal corrected code\n\`\`\`
   * Explanation: Why this is a problem and how fix addresses it
 - **Suggested Patch**: Full corrected code section (optional)
- - **Effort**: S | M | L (~hours) to apply the fix
- - **Docs**: Any documentation updates needed (README, API docs, comments)
+- **Effort**: S | M | L (~hours) to apply the fix
+- **Docs**: Any documentation updates needed (README, API docs, comments)
 
 **Forbidden:**
 - Generic summaries like "code is good but could be better"
@@ -119,74 +185,45 @@ Avoid fabricating facts. Prefer concise, correct guidance.`
 - Omitting line numbers or corrected snippets
 - Skipping code analysis for high-level explanations
 
-If no meaningful issues exist, say: "No significant issues found." But always explain what the code does first.`;
+If no meaningful issues exist, state what the code does clearly and report: "No significant issues found."`;
 
+  let guidelinesText = '';
+  if (Array.isArray(guidelines)) {
+    guidelinesText = guidelines.filter(Boolean).join('\n\n');
+  } else if (typeof guidelines === 'string') {
+    guidelinesText = guidelines.trim();
+  }
 
   const prompt = isPlain
     ? String(code).slice(0, 60000)
     : [
-        guidelines ? `Project guidelines (if any): ${guidelines}` : '',
+        guidelinesText ? `Project guidelines (if any):\n${guidelinesText}` : '',
+        `Language: ${language}`,
         'Review the following code:',
         '```',
         String(code).slice(0, 60000),
         '```'
-      ].join('\n');
+      ].filter(Boolean).join('\n\n');
 
   try {
-    const t0 = Date.now();
     const codeChars = String(code).length;
-    // Local first (privacy + zero cost)
-    const r = await axios.post(`${OLLAMA_URL}/api/generate`, {
-      model: selectedModel,
-      stream: false,
-      prompt,
-      system,
-      options: { temperature: temp }
-    }, { timeout: 60_000 });
+    const result = await generateLLMResponse(prompt, system, selectedModel, temp);
+    const tokenEstimate = Math.ceil((prompt.length + result.text.length) / 4);
 
-    const durationMs = Date.now() - t0;
-    const tokenEstimate = Math.ceil((prompt.length + (r.data?.response?.length || 0)) / 4);
     return res.json({
-      provider: 'ollama',
-      model: selectedModel,
-      metrics: { durationMs, codeChars, tokenEstimate },
-      raw: r.data.response
+      provider: result.provider,
+      model: result.model,
+      metrics: { durationMs: result.durationMs, codeChars, tokenEstimate },
+      raw: result.text
     });
   } catch (err: any) {
-    if (!ALLOW_CLOUD) return res.status(502).json({ error: 'Ollama unavailable and cloud fallback disabled' });
-
-    // Optional OpenAI fallback example
-    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-    if (OPENAI_API_KEY) {
-      try {
-        const openai = await axios.post(
-          'https://api.openai.com/v1/chat/completions',
-          {
-            model: 'gpt-4o-mini',
-            messages: [{ role: 'user', content: prompt }],
-            temperature: 0.2
-          },
-          { headers: { Authorization: `Bearer ${OPENAI_API_KEY}` }, timeout: 60_000 }
-        );
-        const durationMs = 0;
-        const tokenEstimate = Math.ceil((prompt.length + (openai.data.choices?.[0]?.message?.content?.length || 0)) / 4);
-        return res.json({
-          provider: 'openai',
-          model: 'gpt-4o-mini',
-          metrics: { durationMs, codeChars: String(code).length, tokenEstimate },
-          raw: openai.data.choices?.[0]?.message?.content ?? ''
-        });
-      } catch (e: any) {
-        return res.status(502).json({ error: 'All providers failed', detail: e.message });
-      }
-    }
-
-    return res.status(502).json({ error: 'Ollama failed', detail: err?.message });
+    return res.status(502).json({ error: 'Review failed', detail: err?.message || String(err) });
   }
 });
 
-// --- Repo Review: clone and review top files ---
+// --- Repo Review: clone and review files ---
 app.post('/api/reviewRepo', async (req, res) => {
+  let folder = '';
   try {
     const { repo, model, temperature = 0.1, maxBytesPerBatch = 120_000, changedOnly, guidelines } = req.body || {};
     if (!repo || typeof repo !== 'string') return res.status(400).json({ error: 'Missing repo (use owner/repo or full https URL)' });
@@ -198,9 +235,9 @@ app.post('/api/reviewRepo', async (req, res) => {
     }
 
     const tmpRoot = path.join(process.cwd(), 'tmp');
-    if (!fs.existsSync(tmpRoot)) fs.mkdirSync(tmpRoot);
-    const folder = path.join(tmpRoot, String(Date.now()));
-    fs.mkdirSync(folder);
+    if (!fs.existsSync(tmpRoot)) fs.mkdirSync(tmpRoot, { recursive: true });
+    folder = path.join(tmpRoot, String(Date.now()));
+    fs.mkdirSync(folder, { recursive: true });
 
     await new Promise<void>((resolve, reject) => {
       const p = spawn('git', ['clone', '--depth', '1', repoUrl, folder], { stdio: 'ignore' });
@@ -210,7 +247,7 @@ app.post('/api/reviewRepo', async (req, res) => {
 
     // Read or init repo cache
     const dataDir = path.join(process.cwd(), 'data');
-    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
     const idxPath = path.join(dataDir, 'repoIndex.json');
     let idx: any = {};
     try { idx = JSON.parse(fs.readFileSync(idxPath, 'utf8')); } catch { idx = {}; }
@@ -259,7 +296,7 @@ app.post('/api/reviewRepo', async (req, res) => {
             const data = fs.readFileSync(fp, 'utf8');
             const hash = crypto.createHash('sha256').update(data).digest('hex');
             const lang = detectLang(ent.name, data.slice(0, 200));
-            files.push({ rel: path.relative(folder, fp), hash, size: Buffer.byteLength(data, 'utf8'), lang });
+            files.push({ rel: path.relative(folder, fp).replace(/\\/g, '/'), hash, size: Buffer.byteLength(data, 'utf8'), lang });
           } catch {}
         }
       }
@@ -274,7 +311,6 @@ app.post('/api/reviewRepo', async (req, res) => {
     }
     const useChangedOnly = !!changedOnly && Object.keys(prev).length > 0;
 
-  // Build batches within size limit with language annotations
     const loadContent = (rel: string) => fs.readFileSync(path.join(folder, rel), 'utf8');
     const selected = (useChangedOnly ? files.filter(f => changedSet.has(f.rel)) : files);
 
@@ -300,6 +336,14 @@ app.post('/api/reviewRepo', async (req, res) => {
       if (!newFiles.length && !modFiles.length && !remFiles.length) {
         changeSummary += '*No changes detected since last review.*\n\n';
       }
+    }
+
+    // Guidelines handling
+    let userGuidelines = '';
+    if (Array.isArray(guidelines)) {
+      userGuidelines = guidelines.filter(Boolean).join('\n\n');
+    } else if (typeof guidelines === 'string') {
+      userGuidelines = guidelines.trim();
     }
 
     // Attempt to read repo guidelines files
@@ -329,9 +373,27 @@ app.post('/api/reviewRepo', async (req, res) => {
     const selectedModel = (typeof model === 'string' && model.trim()) ? model.trim() : OLLAMA_MODEL;
     const temp = (typeof temperature === 'number' && temperature >= 0 && temperature <= 1) ? temperature : 0.1;
 
-  const header = `Repository: ${repo}\nMode: ${useChangedOnly ? 'Changed files only' : 'Full repository'}\nFiles considered: ${selected.length}/${files.length}\nBatches: ${batches.length}\n${changeSummary}${(guidelines || foundGuidelines.length) ? '\n## Guidelines (Provided/Detected)\n' + [guidelines || '', ...foundGuidelines].filter(Boolean).join('\n\n') + '\n' : ''}`;
+    const header = `Repository: ${repo}\nMode: ${useChangedOnly ? 'Changed files only' : 'Full repository'}\nFiles considered: ${selected.length}/${files.length}\nBatches: ${batches.length}\n${changeSummary}${(userGuidelines || foundGuidelines.length) ? '\n## Guidelines (Provided/Detected)\n' + [userGuidelines, ...foundGuidelines].filter(Boolean).join('\n\n') + '\n' : ''}`;
 
-  const system = `You are a world-class code reviewer specializing in deep, line-by-line analysis. Review ONLY the provided files. If context is partial, state limitations clearly.
+    if (files.length === 0) {
+      return res.json({
+        provider: 'none',
+        model: selectedModel,
+        metrics: { durationMs: 0, filesReviewed: 0, batches: 0, inputChars: 0, outputChars: 0, tokenEstimate: 0 },
+        review: header + '\n\n*No supported source code files found in this repository.*'
+      });
+    }
+
+    if (selected.length === 0) {
+      return res.json({
+        provider: 'none',
+        model: selectedModel,
+        metrics: { durationMs: 0, filesReviewed: 0, batches: 0, inputChars: 0, outputChars: 0, tokenEstimate: 0 },
+        review: header + '\n\n*No files have changed since the last review.*'
+      });
+    }
+
+    const system = `You are a world-class code reviewer specializing in deep, line-by-line analysis. Review ONLY the provided files. If context is partial, state limitations clearly.
 
 **CRITICAL REQUIREMENTS:**
 1. **Code analysis is MANDATORY** - You MUST analyze the actual code, not just provide high-level summaries
@@ -352,8 +414,8 @@ app.post('/api/reviewRepo', async (req, res) => {
   * Explanation: Why this is a problem and how fix addresses it
 - **Suggested Patches**: Full corrected file sections (optional, for complex changes)
 - **Final Notes**: Security risks, performance concerns, architecture issues
- - **Effort**: For each finding, include S | M | L (~hours)
- - **Docs**: Note any documentation updates (README, API docs, comments)
+- **Effort**: For each finding, include S | M | L (~hours)
+- **Docs**: Note any documentation updates (README, API docs, comments)
 
 **Forbidden Behaviors:**
 - Do NOT give generic summaries like "the code works but could be improved"
@@ -368,20 +430,17 @@ Each file has been annotated with its detected programming language. Use this to
     let batchIdx = 1;
     const t0 = Date.now();
     let totalResponseChars = 0;
+    let providerUsed = 'ollama';
+
     for (const blob of batches) {
       const prompt = `Batch ${batchIdx}/${batches.length}\n\n${blob}`;
-      const r = await axios.post(`${OLLAMA_URL}/api/generate`, {
-        model: selectedModel,
-        stream: false,
-        prompt,
-        system,
-        options: { temperature: temp }
-      }, { timeout: 180_000 });
-      const resp = r.data.response || '';
-      totalResponseChars += resp.length;
-      aggregate += `\n\n## Batch ${batchIdx} Review\n${resp}\n`;
+      const r = await generateLLMResponse(prompt, system, selectedModel, temp);
+      providerUsed = r.provider;
+      totalResponseChars += r.text.length;
+      aggregate += `\n\n## Batch ${batchIdx} Review\n${r.text}\n`;
       batchIdx++;
     }
+
     const durationMs = Date.now() - t0;
     const tokenEstimate = Math.ceil((totalChars + totalResponseChars) / 4);
 
@@ -391,9 +450,28 @@ Each file has been annotated with its detected programming language. Use this to
     idx[repoKey] = { files: newFiles, lastReviewed: Date.now() };
     try { fs.writeFileSync(idxPath, JSON.stringify(idx, null, 2), 'utf8'); } catch {}
 
-    return res.json({ provider: 'ollama', model: selectedModel, metrics: { durationMs, filesReviewed: selected.length, batches: batches.length, inputChars: totalChars, outputChars: totalResponseChars, tokenEstimate }, review: aggregate });
+    return res.json({
+      provider: providerUsed,
+      model: selectedModel,
+      metrics: {
+        durationMs,
+        filesReviewed: selected.length,
+        batches: batches.length,
+        inputChars: totalChars,
+        outputChars: totalResponseChars,
+        tokenEstimate
+      },
+      review: aggregate
+    });
   } catch (e: any) {
     return res.status(500).json({ error: 'Repo review failed', detail: e?.message || String(e) });
+  } finally {
+    // Clean up temporary clone directory
+    if (folder) {
+      try {
+        fs.rmSync(folder, { recursive: true, force: true });
+      } catch {}
+    }
   }
 });
 

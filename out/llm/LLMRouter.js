@@ -1,40 +1,13 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LLMRouter = void 0;
-const vscode = __importStar(require("vscode"));
+let vscode;
+try {
+    vscode = require('vscode');
+}
+catch {
+    vscode = null;
+}
 const OllamaProvider_1 = require("./OllamaProvider");
 const OpenAIProvider_1 = require("./OpenAIProvider");
 const DeepSeekProvider_1 = require("./DeepSeekProvider");
@@ -62,8 +35,8 @@ class LLMRouter {
         this.providers.set('gemini', new GeminiProvider_1.GeminiProvider());
     }
     getModelConfig(provider) {
-        const config = vscode.workspace.getConfiguration('aiCodeReview');
-        return config.get(`${provider}.model`) || this.getDefaultModel(provider);
+        const config = vscode?.workspace?.getConfiguration ? vscode.workspace.getConfiguration('aiCodeReview') : null;
+        return config?.get(`${provider}.model`) || this.getDefaultModel(provider);
     }
     getDefaultModel(provider) {
         const defaults = {
@@ -78,8 +51,8 @@ class LLMRouter {
      * Check which providers are available
      */
     async discoverProviders() {
-        const config = vscode.workspace.getConfiguration('aiCodeReview');
-        const preferLocal = config.get('preferLocalLLM', true);
+        const config = vscode?.workspace?.getConfiguration ? vscode.workspace.getConfiguration('aiCodeReview') : null;
+        const preferLocal = config ? config.get('preferLocalLLM', true) : true;
         // Priority order: local first (if preferred), then cloud
         const priorities = preferLocal
             ? ['ollama', 'deepseek', 'openai', 'gemini']

@@ -1,4 +1,11 @@
-import * as vscode from 'vscode';
+import type * as vscodeTypes from 'vscode';
+import * as fs from 'fs';
+let vscode: any;
+try {
+  vscode = require('vscode');
+} catch {
+  vscode = null;
+}
 import * as cp from 'child_process';
 import * as path from 'path';
 import { LLMRouter } from '../llm/LLMRouter';
@@ -51,16 +58,19 @@ export interface FileChange {
 
 export class ReviewManager {
   private llmRouter = new LLMRouter();
-  private context: vscode.ExtensionContext;
+  private context?: vscodeTypes.ExtensionContext | any;
 
-  constructor(context: vscode.ExtensionContext) {
+  constructor(context?: vscodeTypes.ExtensionContext | any) {
     this.context = context;
     // Discover providers on startup
     this.llmRouter.discoverProviders().catch(console.error);
   }
 
   private getWorkspaceRoot(): string | undefined {
-    return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (vscode?.workspace?.workspaceFolders?.[0]?.uri?.fsPath) {
+      return vscode.workspace.workspaceFolders[0].uri.fsPath;
+    }
+    return process.cwd();
   }
 
   async getGitDiff(): Promise<FileChange[]> {
@@ -156,10 +166,26 @@ export class ReviewManager {
 
   private async applyCustomRules(code: string, filePath: string): Promise<ReviewIssue[]> {
     try {
-      const cfgFiles = await vscode.workspace.findFiles('code-review.config.json', '**/node_modules/**', 1);
-      if (!cfgFiles.length) return [];
-      const buf = await vscode.workspace.fs.readFile(cfgFiles[0]);
-      const cfg = JSON.parse(Buffer.from(buf).toString('utf8')) as { patterns?: Array<{ name: string; regex: string; severity?: Severity; message?: string; guideline?: string; tags?: string[] }>; };
+      let content = '';
+      if (vscode?.workspace?.findFiles) {
+        const cfgFiles = await vscode.workspace.findFiles('code-review.config.json', '**/node_modules/**', 1);
+        if (cfgFiles && cfgFiles.length) {
+          const buf = await vscode.workspace.fs.readFile(cfgFiles[0]);
+          content = Buffer.from(buf).toString('utf8');
+        }
+      }
+      if (!content) {
+        const root = this.getWorkspaceRoot();
+        const pth = root ? path.join(root, 'code-review.config.json') : 'code-review.config.json';
+        if (fs.existsSync(pth)) {
+          content = fs.readFileSync(pth, 'utf8');
+        }
+      }
+      if (!content) return [];
+      const cfg = JSON.parse(content) as { patterns?: Array<{ name: string; regex: string; severity?: Severity; message?: string; guideline?: string; tags?: string[] }>; };
+
+
+
       const issues: ReviewIssue[] = [];
       if (cfg.patterns) {
         for (const p of cfg.patterns) {
