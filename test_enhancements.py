@@ -16,13 +16,12 @@ def test_language_detection():
     """Test that language detection works for various file types"""
     print("\n=== TEST 1: Language Detection ===")
     
-    # This will be tested via repo review
     payload = {
         "repo": "Davide-glitch/Santorini-Game",
         "model": "qwen2.5-coder:7b",
         "temperature": 0.1,
         "changedOnly": False,
-        "maxBytesPerBatch": 50000  # Small batches for faster test
+        "maxBytesPerBatch": 50000
     }
     
     print(f"Requesting repo review: {payload['repo']}")
@@ -31,18 +30,16 @@ def test_language_detection():
     if response.status_code == 200:
         result = response.json().get('review', '')
         
-        # Check for language annotations
         if "(Language:" in result:
-            print("✅ Language detection WORKING - Found language annotations")
-            # Extract first few language annotations
+            print("[PASS] Language detection WORKING - Found language annotations")
             lines = result.split('\n')
             lang_lines = [l for l in lines if '(Language:' in l][:5]
             for line in lang_lines:
                 print(f"   {line}")
         else:
-            print("❌ Language detection FAILED - No language annotations found")
+            print("[FAIL] Language detection FAILED - No language annotations found")
     else:
-        print(f"❌ API Error: {response.status_code}")
+        print(f"[FAIL] API Error: {response.status_code}")
         print(response.text)
 
 def test_code_focused_prompts():
@@ -79,7 +76,6 @@ def missing_error_handling():
     if response.status_code == 200:
         result = response.json().get('raw', '')
         
-        # Check for required elements
         checks = {
             "Line numbers": any(word in result for word in ["Line", "line", "Line(s)", "line:"]),
             "Severity levels": any(word in result for word in ["CRITICAL", "HIGH", "MEDIUM", "Severity"]),
@@ -89,26 +85,24 @@ def missing_error_handling():
         
         print("\nCode-focused elements check:")
         for check, passed in checks.items():
-            status = "✅" if passed else "❌"
+            status = "[PASS]" if passed else "[FAIL]"
             print(f"{status} {check}: {'PRESENT' if passed else 'MISSING'}")
         
         if all(checks.values()):
-            print("\n✅ Code-focused prompts WORKING")
+            print("\n[PASS] Code-focused prompts WORKING")
         else:
-            print("\n⚠️  Code-focused prompts PARTIALLY WORKING")
+            print("\n[WARN] Code-focused prompts PARTIALLY WORKING")
             
-        # Show snippet of output
         print("\nFirst 500 chars of review:")
         print(result[:500])
     else:
-        print(f"❌ API Error: {response.status_code}")
+        print(f"[FAIL] API Error: {response.status_code}")
         print(response.text)
 
 def test_change_tracking():
     """Test that change tracking displays what changed"""
     print("\n=== TEST 3: Change Tracking Display ===")
     
-    # First, do a full review to establish cache
     payload = {
         "repo": "Davide-glitch/Santorini-Game",
         "model": "qwen2.5-coder:7b",
@@ -121,24 +115,21 @@ def test_change_tracking():
     response = requests.post(f"{BASE_URL}/api/reviewRepo", json=payload, timeout=300)
     
     if response.status_code == 200:
-        print("✅ Cache established")
+        print("[PASS] Cache established")
         
-        # Now do an incremental review
         print("\nStep 2: Incremental review with changedOnly=true...")
         payload['changedOnly'] = True
         
-        time.sleep(2)  # Brief pause
+        time.sleep(2)
         
         response = requests.post(f"{BASE_URL}/api/reviewRepo", json=payload, timeout=300)
         
         if response.status_code == 200:
             result = response.json().get('review', '')
             
-            # Check for change tracking section
             if "## Files Changed" in result or "Files Changed" in result:
-                print("✅ Change tracking WORKING - Found 'Files Changed' section")
+                print("[PASS] Change tracking WORKING - Found 'Files Changed' section")
                 
-                # Extract change summary
                 lines = result.split('\n')
                 in_changes = False
                 change_lines = []
@@ -151,51 +142,49 @@ def test_change_tracking():
                         change_lines.append(line)
                 
                 print("\nChange summary:")
-                for line in change_lines[:20]:  # Show first 20 lines
+                for line in change_lines[:20]:
                     print(line)
             else:
-                print("⚠️  Change tracking: No changes detected (or section missing)")
-                print("   This is expected if repo hasn't changed since last review")
+                print("[WARN] Change tracking: No changes detected (or section missing)")
+                print("       This is expected if repo has not changed since last review")
         else:
-            print(f"❌ API Error: {response.status_code}")
+            print(f"[FAIL] API Error: {response.status_code}")
     else:
-        print(f"❌ API Error: {response.status_code}")
+        print(f"[FAIL] API Error: {response.status_code}")
 
 def main():
     print("=" * 60)
     print("TESTING ENHANCED CODE REVIEW FEATURES")
     print("=" * 60)
     
-    # Check if backend is running
     try:
         response = requests.get(f"{BASE_URL}/health", timeout=5)
         if response.status_code == 200:
             health = response.json()
-            print(f"\n✅ Backend is healthy")
-            print(f"   Model: {health.get('model', 'unknown')}")
-            print(f"   Available models: {len(health.get('models', []))}")
+            print(f"\n[PASS] Backend is healthy")
+            print(f"       Model: {health.get('model', 'unknown')}")
+            print(f"       Available models: {len(health.get('models', []))}")
         else:
-            print(f"\n❌ Backend health check failed: {response.status_code}")
+            print(f"\n[FAIL] Backend health check failed: {response.status_code}")
             return
     except Exception as e:
-        print(f"\n❌ Cannot connect to backend: {e}")
-        print("   Make sure backend is running on http://localhost:7070")
+        print(f"\n[FAIL] Cannot connect to backend: {e}")
+        print("       Make sure backend is running on http://localhost:7070")
         return
     
     try:
-        # Run tests
-        test_code_focused_prompts()  # Fast test first
+        test_code_focused_prompts()
         time.sleep(2)
         
-        test_language_detection()  # Slower test
+        test_language_detection()
         time.sleep(2)
         
-        test_change_tracking()  # Slowest test
+        test_change_tracking()
         
     except KeyboardInterrupt:
-        print("\n\n⚠️  Tests interrupted by user")
+        print("\n\n[WARN] Tests interrupted by user")
     except Exception as e:
-        print(f"\n\n❌ Test error: {e}")
+        print(f"\n\n[FAIL] Test error: {e}")
     
     print("\n" + "=" * 60)
     print("TESTS COMPLETE")

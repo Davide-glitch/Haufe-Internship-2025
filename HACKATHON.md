@@ -1,10 +1,10 @@
-# AI Code Review Assistant — Technical Documentation & Project Overview
+# AI Code Review Assistant - Technical Documentation & Project Overview
 
 An intelligent, local-first code review assistant built for developers and teams. Combines multi-language static heuristics, rule-based analyzers, and deep semantic LLM analysis with zero-data-leakage local execution (via Ollama) and optional cloud fallbacks (OpenAI, DeepSeek, Gemini).
 
 ---
 
-## 📋 Executive Summary
+## Executive Summary
 
 Modern engineering teams need high-signal code reviews without exposing proprietary code to third-party cloud services. This project delivers a complete review suite featuring:
 
@@ -18,60 +18,60 @@ Modern engineering teams need high-signal code reviews without exposing propriet
 
 ---
 
-## 🏛️ System Architecture
+## System Architecture
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          User Interfaces                               │
-│  ┌───────────────────────┐  ┌────────────────────────────────────────┐ │
-│  │   Web UI (Vite+React) │  │ VS Code Extension & CLI (ai-review)    │ │
-│  │  http://localhost:5173│  │ Native Webview, Commands & Hooks       │ │
-│  └───────────┬───────────┘  └───────────────────┬────────────────────┘ │
-└──────────────┼──────────────────────────────────┼──────────────────────┘
-               │                                  │
-               ▼                                  ▼
-┌──────────────────────────────────┐ ┌──────────────────────────────────┐
-│  Backend API Server (Express TS) │ │   Extension Review Engine        │
-│  Port 7070                       │ │   (ReviewManager & Analyzers)    │
-│  • /health, /models              │ │   • Static Heuristics            │
-│  • /api/review (single file)     │ │   • Language Analyzers           │
-│  • /api/reviewRepo (Git clone)   │ │   • code-review.config.json      │
-│  • /api/comments (thread store)  │ │   • Git Diff Analyzer            │
-└──────────────┬───────────────────┘ └────────────────────┬─────────────┘
-               │                                          │
-               ▼                                          ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                   LLM Routing & Inference Layer                        │
-│                                                                        │
-│  1. Local Ollama (Priority 1)   ──> http://127.0.0.1:11434 (Private)   │
-│  2. DeepSeek API (Fallback)     ──> https://api.deepseek.com           │
-│  3. OpenAI API (Fallback)       ──> https://api.openai.com/v1          │
-│  4. Google Gemini (Fallback)    ──> generativelanguage.googleapis.com  │
-└────────────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------------+
+|                          User Interfaces                               |
+|  +-----------------------+  +----------------------------------------+ |
+|  |   Web UI (Vite+React) |  | VS Code Extension & CLI (ai-review)    | |
+|  |   http://localhost:5173| | Native Webview, Commands & Hooks       | |
+|  +-----------+-----------+  +-------------------+--------------------+ |
++--------------+----------------------------------+----------------------+
+               |                                  |
+               v                                  v
++----------------------------------+ +----------------------------------+
+|  Backend API Server (Express TS) | |   Extension Review Engine        |
+|  Port 7070                       | |   (ReviewManager & Analyzers)    |
+|  * /health, /models              | |   * Static Heuristics            |
+|  * /api/review (single file)     | |   * Language Analyzers           |
+|  * /api/reviewRepo (Git clone)   | |   * code-review.config.json      |
+|  * /api/comments (thread store)  | |   * Git Diff Analyzer            |
++--------------+-------------------+ +--------------------+-------------+
+               |                                          |
+               v                                          v
++------------------------------------------------------------------------+
+|                   LLM Routing & Inference Layer                        |
+|                                                                        |
+|  1. Local Ollama (Priority 1)   --> http://127.0.0.1:11434 (Private)   |
+|  2. DeepSeek API (Fallback)     --> https://api.deepseek.com           |
+|  3. OpenAI API (Fallback)       --> https://api.openai.com/v1          |
+|  4. Google Gemini (Fallback)    --> generativelanguage.googleapis.com  |
++------------------------------------------------------------------------+
 ```
 
 ---
 
-## 🔍 Core Analysis Pipeline
+## Core Analysis Pipeline
 
 Every review passes through four synchronized inspection layers:
 
 ```
 Source Code / Git Diff
-         │
-         ▼
-[ Layer 1: Heuristic Engine ] ────► Fast regex detection (secrets, eval, logs, line length)
-         │
-         ▼
-[ Layer 2: Language Analyzers ] ──► Specialized rules (Python PEP8/SQLi, JS/TS ESLint, Java)
-         │
-         ▼
-[ Layer 3: Custom Rules ] ────────► Team policies from code-review.config.json
-         │
-         ▼
-[ Layer 4: Semantic LLM ] ────────► Line-by-line AI deep analysis with exact fix diffs
-         │
-         ▼
+         |
+         v
+[ Layer 1: Heuristic Engine ] ----> Fast regex detection (secrets, eval, logs, line length)
+         |
+         v
+[ Layer 2: Language Analyzers ] --> Specialized rules (Python PEP8/SQLi, JS/TS ESLint, Java)
+         |
+         v
+[ Layer 3: Custom Rules ] --------> Team policies from code-review.config.json
+         |
+         v
+[ Layer 4: Semantic LLM ] --------> Line-by-line AI deep analysis with exact fix diffs
+         |
+         v
 Consolidated Findings & Metrics (Severity, Lines, Patches, Effort, Docs)
 ```
 
@@ -85,7 +85,7 @@ Consolidated Findings & Metrics (Severity, Lines, Patches, Effort, Docs)
 
 ---
 
-## ⚡ Technical Features & Implementation
+## Technical Features & Implementation
 
 ### 1. Incremental Repository Review
 - **Repository Caching**: Tracks every reviewed file's SHA-256 hash in `backend/data/repoIndex.json`.
@@ -106,7 +106,7 @@ Consolidated Findings & Metrics (Severity, Lines, Patches, Effort, Docs)
 
 ---
 
-## 🛠️ Verification & Testing
+## Verification & Testing
 
 The repository includes end-to-end verification scripts and demo targets:
 
@@ -125,7 +125,7 @@ python test_enhancements.py
 
 ---
 
-## 📦 Environment & Port Summary
+## Environment & Port Summary
 
 | Component | Default Port / Location | Description |
 | :--- | :--- | :--- |
@@ -134,4 +134,3 @@ python test_enhancements.py
 | **Ollama Service** | `http://localhost:11434` | Local LLM inference engine |
 | **Cache Database** | `backend/data/repoIndex.json` | Repository state and hash index |
 | **Comments Storage**| `backend/data/comments.json` | Repository review threads |
-

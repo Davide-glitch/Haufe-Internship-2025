@@ -20,7 +20,7 @@ async function main() {
     if (result.issues.length) {
         console.log(`Found ${result.issues.length} issues:`);
         for (const i of result.issues) {
-            console.log(`- [${i.severity}] ${i.filePath}:${i.startLine} ${i.title} — ${i.message}`);
+            console.log(`- [${i.severity}] ${i.filePath}:${i.startLine} ${i.title} - ${i.message}`);
         }
     }
     // Fail on any critical issues

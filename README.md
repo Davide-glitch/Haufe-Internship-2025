@@ -9,22 +9,22 @@ An intelligent, local-first code review platform designed for privacy, speed, an
 
 ---
 
-## ✨ Features
+## Features
 
-- 🏠 **Local-First & Private**: Runs completely on your machine via Ollama (`qwen2.5-coder:7b`, `deepseek-coder`, `llama3`). Zero telemetry, zero cloud costs.
-- ☁️ **Flexible Cloud Fallback**: Optional integration with OpenAI (`gpt-4o-mini`), DeepSeek, or Google Gemini when local compute is unavailable.
-- 🌐 **Modern Web Console**: Interactive two-panel web UI featuring code editing, live metrics, multi-file guideline merging, and comment threads.
-- 🔄 **Incremental & Full Repo Reviews**: Clone and review public GitHub repositories. Cache files by SHA-256 hash in `backend/data/repoIndex.json` to review only modified/new files (`changedOnly`).
-- 🎯 **Line-by-Line Code Analysis**: Mandatory exact line citations, before/after corrected code snippets, severity tags (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`), effort estimates (`S`, `M`, `L`), and doc recommendations.
-- 📋 **Project Guidelines Awareness**: Paste custom guidelines or upload multiple rules files (`.eslintrc`, `pyproject.toml`, `.editorconfig`, Markdown, JSON) with automatic merging.
-- 💬 **Discussion & Comments Thread**: Anchor review notes and comments to specific files and line numbers.
-- 🔌 **VS Code Extension & Standalone CLI**:
+- **Local-First & Private**: Runs completely on your machine via Ollama (`qwen2.5-coder:7b`, `deepseek-coder`, `llama3`). Zero telemetry, zero cloud costs.
+- **Flexible Cloud Fallback**: Optional integration with OpenAI (`gpt-4o-mini`), DeepSeek, or Google Gemini when local compute is unavailable.
+- **Modern Web Console**: Interactive two-panel web UI featuring code editing, live metrics, multi-file guideline merging, and comment threads.
+- **Incremental & Full Repo Reviews**: Clone and review public GitHub repositories. Cache files by SHA-256 hash in `backend/data/repoIndex.json` to review only modified/new files (`changedOnly`).
+- **Line-by-Line Code Analysis**: Mandatory exact line citations, before/after corrected code snippets, severity tags (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`), effort estimates (`S`, `M`, `L`), and doc recommendations.
+- **Project Guidelines Awareness**: Paste custom guidelines or upload multiple rules files (`.eslintrc`, `pyproject.toml`, `.editorconfig`, Markdown, JSON) with automatic merging.
+- **Discussion & Comments Thread**: Anchor review notes and comments to specific files and line numbers.
+- **VS Code Extension & Standalone CLI**:
   - Run reviews directly inside VS Code with `Ctrl+Shift+R`.
   - Block problematic commits before they hit your repo via `ai-review --staged` pre-commit hooks.
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```mermaid
 flowchart TD
@@ -56,7 +56,7 @@ flowchart TD
 
 ---
 
-## 🚀 Quick Start (Windows)
+## Quick Start (Windows)
 
 ### 1. Prerequisites
 - **Node.js** 18+ and **npm** 9+ ([Download Node.js](https://nodejs.org/))
@@ -81,7 +81,7 @@ To stop all services and free the ports, double-click **`stop_all.bat`**.
 
 ---
 
-## 💻 Manual Setup & Cross-Platform (macOS / Linux)
+## Manual Setup & Cross-Platform (macOS / Linux)
 
 ### 1. Install Dependencies
 ```bash
@@ -114,7 +114,7 @@ npm run dev
 
 ---
 
-## 🖥️ Using the Standalone CLI & Pre-commit Hook
+## Using the Standalone CLI & Pre-commit Hook
 
 ### Run Code Review via CLI
 You can review staged Git changes directly from your terminal:
@@ -143,7 +143,7 @@ chmod +x .git/hooks/pre-commit
 
 ---
 
-## 📖 Web UI Walkthrough
+## Web UI Walkthrough
 
 1. **Single File Review (Left Panel)**:
    - Paste code into the editor.
@@ -163,7 +163,7 @@ chmod +x .git/hooks/pre-commit
 
 ---
 
-## ⚙️ Configuration & Custom Rules
+## Configuration & Custom Rules
 
 ### Environment Variables
 Configure backend behavior via environment variables or a `.env` file in `backend/`:
@@ -206,7 +206,7 @@ Define custom static analysis rules in the workspace root:
 
 ---
 
-## 🧪 Testing & Verification
+## Testing & Verification
 
 Run the included verification scripts to validate backend health, language detection, and incremental change tracking:
 
@@ -226,48 +226,48 @@ Inspect the bundled demo targets in `demo/`:
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 Haufe-Internship-2025/
-├── backend/                   # Node.js + Express TypeScript API
-│   ├── src/
-│   │   └── server.ts          # REST endpoints, Ollama/OpenAI routing, git cloning
-│   ├── data/                  # Persistent cache (repoIndex.json, comments.json)
-│   ├── package.json
-│   └── tsconfig.json
-├── web/                       # React + Vite Web Application
-│   ├── src/
-│   │   ├── App.tsx            # Interactive review dashboard & comment threads
-│   │   ├── main.tsx           # Entry point
-│   │   └── styles.css         # Modern dark-theme styling
-│   ├── index.html
-│   ├── package.json
-│   └── vite.config.ts
-├── src/                       # VS Code Extension & CLI Engine
-│   ├── analyzers/             # Language-specific heuristics (Python, JS, TS)
-│   ├── cli/                   # Standalone review-cli.js (ai-review --staged)
-│   ├── llm/                   # Multi-provider LLM router (Ollama, DeepSeek, OpenAI, Gemini)
-│   ├── panels/                # VS Code Webview review panel
-│   ├── services/              # ReviewManager core orchestration & Git diff parser
-│   └── extension.ts           # VS Code extension entry point
-├── demo/                      # Sample buggy files for testing
-│   ├── buggy_python.py
-│   ├── buggy_javascript.js
-│   └── buggy_typescript.ts
-├── scripts/                   # Resilient process runners (run_backend.bat, run_web.bat)
-├── start_all.bat              # One-click Windows launcher (Ollama + Backend + Web)
-├── stop_all.bat               # Clean process terminator for Windows
-├── quick_test.py              # Backend health and review verification script
-├── test_enhancements.py       # Multi-feature automated test suite
-├── code-review.config.json    # Workspace custom linting rules
-├── HACKATHON.md               # Technical specification and architecture overview
-└── README.md                  # Project documentation
+|-- backend/                   # Node.js + Express TypeScript API
+|   |-- src/
+|   |   \-- server.ts          # REST endpoints, Ollama/OpenAI routing, git cloning
+|   |-- data/                  # Persistent cache (repoIndex.json, comments.json)
+|   |-- package.json
+|   \-- tsconfig.json
+|-- web/                       # React + Vite Web Application
+|   |-- src/
+|   |   |-- App.tsx            # Interactive review dashboard & comment threads
+|   |   |-- main.tsx           # Entry point
+|   |   \-- styles.css         # Modern dark-theme styling
+|   |-- index.html
+|   |-- package.json
+|   \-- vite.config.ts
+|-- src/                       # VS Code Extension & CLI Engine
+|   |-- analyzers/             # Language-specific heuristics (Python, JS, TS)
+|   |-- cli/                   # Standalone review-cli.js (ai-review --staged)
+|   |-- llm/                   # Multi-provider LLM router (Ollama, DeepSeek, OpenAI, Gemini)
+|   |-- panels/                # VS Code Webview review panel
+|   |-- services/              # ReviewManager core orchestration & Git diff parser
+|   \-- extension.ts           # VS Code extension entry point
+|-- demo/                      # Sample buggy files for testing
+|   |-- buggy_python.py
+|   |-- buggy_javascript.js
+|   \-- buggy_typescript.ts
+|-- scripts/                   # Resilient process runners (run_backend.bat, run_web.bat)
+|-- start_all.bat              # One-click Windows launcher (Ollama + Backend + Web)
+|-- stop_all.bat               # Clean process terminator for Windows
+|-- quick_test.py              # Backend health and review verification script
+|-- test_enhancements.py       # Multi-feature automated test suite
+|-- code-review.config.json    # Workspace custom linting rules
+|-- HACKATHON.md               # Technical specification and architecture overview
+\-- README.md                  # Project documentation
 ```
 
 ---
 
-## ❓ Troubleshooting
+## Troubleshooting
 
 | Issue | Resolution |
 | :--- | :--- |
@@ -278,6 +278,6 @@ Haufe-Internship-2025/
 
 ---
 
-## 📄 Documentation
+## Documentation
 
 - **Technical Specification**: See [HACKATHON.md](./HACKATHON.md) for architecture deep-dives and pipeline specifications.

@@ -263,10 +263,10 @@ export default function App() {
     <div className="app">
       <div className="header">
         <div className="logo">
-          <div className="logo-icon">⚡</div>
+          <div className="logo-icon">CR</div>
           <div className="logo-text">
             <h1>AI Code Review</h1>
-            <p>Local • Private • Zero Cost</p>
+            <p>Local | Private | Zero Cost</p>
           </div>
         </div>
         <div className="status" onClick={checkHealth} style={{ cursor: 'pointer' }} title="Click to refresh status">
@@ -278,7 +278,7 @@ export default function App() {
                   : 'API Online (Ollama)')
               : 'API Offline'}
           </span>
-          <span style={{ fontSize: '0.75rem', opacity: 0.7, marginLeft: '0.25rem' }}>🔄</span>
+          <span style={{ fontSize: '0.75rem', opacity: 0.7, marginLeft: '0.25rem' }}>(refresh)</span>
         </div>
       </div>
 
@@ -347,7 +347,7 @@ export default function App() {
           <div style={{ padding: '0.75rem 1.25rem', display: 'grid', gap: '.5rem' }}>
             <div className="controls-inline" style={{ gap: '.5rem', flexWrap: 'wrap' }}>
               <label className="btn-secondary" style={{ cursor: 'pointer' }}>
-                📄 Upload Guidelines (supports multi-file)
+                Upload Guidelines (supports multi-file)
                 <input
                   type="file"
                   multiple
@@ -447,11 +447,11 @@ export default function App() {
               </select>
               {resp && (
                 <button className="btn-secondary" onClick={copyToClipboard} style={{ fontSize: '0.8rem' }}>
-                  {copyStatus || '📋 Copy'}
+                  {copyStatus || 'Copy'}
                 </button>
               )}
               <button className="btn-primary" onClick={submit} disabled={loading || !healthData?.ok}>
-                {loading ? '⏳ Reviewing…' : '🚀 Review Code'}
+                {loading ? 'Reviewing...' : 'Review Code'}
               </button>
             </div>
           </div>
@@ -460,7 +460,7 @@ export default function App() {
               <pre className="output-text">{resp}</pre>
             ) : (
               <div className="placeholder">
-                <div className="placeholder-icon">💡</div>
+                <div className="placeholder-icon">[Ready]</div>
                 <p>Your AI-powered review will appear here</p>
                 <p className="placeholder-hint">Paste code on the left or enter a GitHub repository below</p>
               </div>
@@ -492,7 +492,7 @@ export default function App() {
                 Changed only
               </label>
               <button className="btn-primary" onClick={submitRepo} disabled={loading || !healthData?.ok}>
-                {loading ? '⏳ Analyzing Repo…' : '🔎 Review Repo'}
+                {loading ? 'Analyzing Repo...' : 'Review Repo'}
               </button>
             </div>
           </div>
@@ -500,11 +500,11 @@ export default function App() {
           {metrics && (
             <div style={{ padding: '0.5rem 1.25rem', borderBottom: '1px solid var(--border-color)', fontSize: '.85rem', color: 'var(--text-muted)' }}>
               <b>Metrics:</b> Duration: {metrics.durationMs}ms
-              {metrics.filesReviewed !== undefined && ` • Files: ${metrics.filesReviewed}`}
-              {metrics.batches !== undefined && ` • Batches: ${metrics.batches}`}
-              {metrics.inputChars !== undefined && ` • Input: ${metrics.inputChars.toLocaleString()} chars`}
-              {metrics.outputChars !== undefined && ` • Output: ${metrics.outputChars.toLocaleString()} chars`}
-              {metrics.tokenEstimate !== undefined && ` • Est. Tokens: ~${metrics.tokenEstimate.toLocaleString()}`}
+              {metrics.filesReviewed !== undefined && ` | Files: ${metrics.filesReviewed}`}
+              {metrics.batches !== undefined && ` | Batches: ${metrics.batches}`}
+              {metrics.inputChars !== undefined && ` | Input: ${metrics.inputChars.toLocaleString()} chars`}
+              {metrics.outputChars !== undefined && ` | Output: ${metrics.outputChars.toLocaleString()} chars`}
+              {metrics.tokenEstimate !== undefined && ` | Est. Tokens: ~${metrics.tokenEstimate.toLocaleString()}`}
             </div>
           )}
 
@@ -550,7 +550,7 @@ export default function App() {
                   {comments.slice().reverse().map(c => (
                     <div key={c.id} style={{ padding: '.5rem 1rem', borderBottom: '1px solid var(--border-color)' }}>
                       <div style={{ fontSize: '.75rem', color: 'var(--text-muted)' }}>
-                        {c.file || 'General'} {c.lines ? `(Lines ${c.lines})` : ''} • {new Date(c.createdAt).toLocaleString()}
+                        {c.file || 'General'} {c.lines ? `(Lines ${c.lines})` : ''} | {new Date(c.createdAt).toLocaleString()}
                       </div>
                       <div style={{ whiteSpace: 'pre-wrap', marginTop: 4, fontSize: '0.9rem' }}>{c.text}</div>
                     </div>
@@ -563,7 +563,7 @@ export default function App() {
       </div>
 
       <div className="footer">
-        <span>Powered by Ollama • Running locally and privately on your machine</span>
+        <span>Powered by Ollama | Running locally and privately on your machine</span>
       </div>
     </div>
   );

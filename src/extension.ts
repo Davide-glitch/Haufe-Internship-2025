@@ -58,9 +58,9 @@ export function activate(context: vscode.ExtensionContext) {
           <div class="row">
             <label class="muted">Current Model:</label>
             <select id="model"></select>
-            <span id="health" class="status muted">Checking API…</span>
+            <span id="health" class="status muted">Checking API...</span>
           </div>
-          <textarea id="prompt" placeholder="Paste code or write a question…"></textarea>
+          <textarea id="prompt" placeholder="Paste code or write a question..."></textarea>
           <div class="row">
             <button id="run">Review</button>
             <button id="clear" class="muted" style="background:transparent;border:1px solid var(--vscode-input-border);">Clear</button>
@@ -106,7 +106,7 @@ export function activate(context: vscode.ExtensionContext) {
           btn.onclick = () => {
             const code = (txt.value || '').trim();
             if (!code) { out.style.display='block'; out.textContent='Please enter some code or a question.'; return; }
-            btn.disabled = true; btn.textContent = 'Reviewing…';
+            btn.disabled = true; btn.textContent = 'Reviewing...';
             vscode.postMessage({ type: 'review', code, language: 'python', model: model.value });
           };
         </script>
@@ -158,7 +158,7 @@ export function activate(context: vscode.ExtensionContext) {
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: 'AI Code Review: Analyzing current file…',
+        title: 'AI Code Review: Analyzing current file...',
         cancellable: true,
       },
       async (progress, token) => {
@@ -280,7 +280,7 @@ export function activate(context: vscode.ExtensionContext) {
       reviewed.add(target);
       try {
         await vscode.window.withProgress(
-          { location: vscode.ProgressLocation.Notification, title: 'AI Code Review (auto)…', cancellable: false },
+          { location: vscode.ProgressLocation.Notification, title: 'AI Code Review (auto)...', cancellable: false },
           async () => {
             const code = target.getText();
             const language = target.languageId;

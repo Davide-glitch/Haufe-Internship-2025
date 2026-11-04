@@ -91,9 +91,9 @@ function activate(context) {
           <div class="row">
             <label class="muted">Current Model:</label>
             <select id="model"></select>
-            <span id="health" class="status muted">Checking API…</span>
+            <span id="health" class="status muted">Checking API...</span>
           </div>
-          <textarea id="prompt" placeholder="Paste code or write a question…"></textarea>
+          <textarea id="prompt" placeholder="Paste code or write a question..."></textarea>
           <div class="row">
             <button id="run">Review</button>
             <button id="clear" class="muted" style="background:transparent;border:1px solid var(--vscode-input-border);">Clear</button>
@@ -139,7 +139,7 @@ function activate(context) {
           btn.onclick = () => {
             const code = (txt.value || '').trim();
             if (!code) { out.style.display='block'; out.textContent='Please enter some code or a question.'; return; }
-            btn.disabled = true; btn.textContent = 'Reviewing…';
+            btn.disabled = true; btn.textContent = 'Reviewing...';
             vscode.postMessage({ type: 'review', code, language: 'python', model: model.value });
           };
         </script>
@@ -186,7 +186,7 @@ function activate(context) {
         const language = document.languageId;
         await vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: 'AI Code Review: Analyzing current file…',
+            title: 'AI Code Review: Analyzing current file...',
             cancellable: true,
         }, async (progress, token) => {
             try {
@@ -309,7 +309,7 @@ function activate(context) {
                 return;
             reviewed.add(target);
             try {
-                await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'AI Code Review (auto)…', cancellable: false }, async () => {
+                await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'AI Code Review (auto)...', cancellable: false }, async () => {
                     const code = target.getText();
                     const language = target.languageId;
                     const review = await reviewManager.reviewCode(code, language, target.fileName);

@@ -123,15 +123,15 @@ export class CodeReviewPanel {
     </div>
     <div class="card">
       <div class="metric">Severity</div>
-      <div class="metric">INFO: ${metrics.bySeverity.info} • WARN: ${metrics.bySeverity.warning} • ERR: ${metrics.bySeverity.error} • CRIT: ${metrics.bySeverity.critical}</div>
+      <div class="metric">INFO: ${metrics.bySeverity.info} | WARN: ${metrics.bySeverity.warning} | ERR: ${metrics.bySeverity.error} | CRIT: ${metrics.bySeverity.critical}</div>
     </div>
     <div class="card">
       <div class="metric">Performance</div>
-      <div class="metric">${(metrics.durationMs/1000).toFixed(1)}s • ${metrics.tokenUsage?.promptTokens ? `${(metrics.tokenUsage.promptTokens ?? 0) + (metrics.tokenUsage.responseTokens ?? 0)} tokens` : `~${metrics.tokenUsage ? (metrics.tokenUsage.promptChars + metrics.tokenUsage.responseChars) : 0} chars`}</div>
+      <div class="metric">${(metrics.durationMs/1000).toFixed(1)}s | ${metrics.tokenUsage?.promptTokens ? `${(metrics.tokenUsage.promptTokens ?? 0) + (metrics.tokenUsage.responseTokens ?? 0)} tokens` : `~${metrics.tokenUsage ? (metrics.tokenUsage.promptChars + metrics.tokenUsage.responseChars) : 0} chars`}</div>
     </div>
     <div class="card">
       <div class="metric">Provider</div>
-      <div class="metric">${escapeHtml(review.providerUsed || 'unknown')}${metrics.tokenUsage?.cost ? ` • $${metrics.tokenUsage.cost.toFixed(4)}` : ' • FREE'}</div>
+      <div class="metric">${escapeHtml(review.providerUsed || 'unknown')}${metrics.tokenUsage?.cost ? ` | $${metrics.tokenUsage.cost.toFixed(4)}` : ' | FREE'}</div>
     </div>
     <div class="card">
       <button id="copyInsights" class="btn">Copy AI Insights</button>
@@ -142,7 +142,7 @@ export class CodeReviewPanel {
   ${aiHtml}
   ${review.docSuggestions && review.docSuggestions.length > 0 ? `
   <section style="padding: 8px 16px 24px;">
-    <h3 style="margin: 16px 0 8px; color: var(--vscode-foreground);">📝 Documentation Suggestions</h3>
+    <h3 style="margin: 16px 0 8px; color: var(--vscode-foreground);">Documentation Suggestions</h3>
     <ul style="margin: 0; padding-left: 24px;">
       ${review.docSuggestions.map(s => `<li style="margin: 6px 0;">${escapeHtml(s)}</li>`).join('')}
     </ul>
